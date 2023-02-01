@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stomp 연결 테스트</title>
+    <link href="/webjars/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
+    <script src="/webjars/jquery/3.6.2/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+</head>
+<body>
+<div>
+    <label for="input-jwt">토큰 입력 : </label>
+    <input id="input-jwt" type="text">
+    <div>
+        <button onclick="onConnectBtnClick()">STOMP 연결</button>
+        <button onclick="onSubscribeBtnClick()">구독요청</button>
+        <label for="input-message">메시지 입력</label><input id="input-message" type="text">
+        <button onclick="sendMessage()">메시지 전송</button>
+    </div>
+    <div id="text-div"></div>
+</div>
+</body>
+<script>
+    let socket
+    let stompClient
+
+    let contents = ""
+
+    const setTextDiv = () => {
+        $("#text-div").html(contents)
+    }
+
+    const getTimeText = () => {
+        const date = new Date()
+        return "[" + date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " "
+            + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "]"
+    }
+
+    const addContents = (text) => {
+        contents += (getTimeText() + " " + text + "<br/>")
+        setTextDiv()
+    }
+
+    const onConnected = () => {
+        const text = "connect success!!"
+        console.log(text)
+        addContents(text)
+    }
+
+    const onError = (err) => {
+        console.log("error")
+        console.log(err)
+        addContents("connect error...")
+    }
+
+    const onConnectBtnClick = () => {
+        const token = $("#input-jwt").val()
+        socket = new SockJS(`/ws-meetings?token=${token}`)
+        stompClient = Stomp.over(socket)
+        // stompClient = Stomp.client(`ws://localhost:8288/ws-meetings?token=${token}`)
+        stompClient.connect({}, onConnected, onError)
+    }
+
+    const onSubscribeBtnClick = () => {
+        stompClient.subscribe("/sub", (msg) => {
+            addContents(msg)
+        })
+        addContents("subscribe...")
+    }
+
+    const sendMessage = () => {
+        const message = $("#input-message").val()
+        stompClient.send("/pub/message", {}, message)
+        $("#input-message").val("")
+    }
+</script>
+</html>
