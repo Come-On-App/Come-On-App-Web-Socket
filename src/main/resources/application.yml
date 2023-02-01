@@ -1,1 +1,9 @@
-
+spring:
+  config:
+    additional-location: config/
+  profiles:
+    group:
+      local: "local,websocket"
+      dev: "dev,websocket"
+      prod: "prod,websocket"
+    active: local
