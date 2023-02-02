@@ -1,5 +1,6 @@
-package com.comeon.websocket.config;
+package com.comeon.websocket.global.config;
 
+import com.comeon.websocket.global.utils.StompSessionAttrUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,6 @@ public class JwtHandshakeHandler extends DefaultHandshakeHandler {
 
     @Override
     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        log.info("attributes: {}", attributes.toString());
-        return () -> attributes.get("uid").toString();
+        return () -> String.valueOf(StompSessionAttrUtils.getUserId(attributes));
     }
 }

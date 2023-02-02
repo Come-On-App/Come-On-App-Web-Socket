@@ -1,4 +1,4 @@
-package com.comeon.websocket.config;
+package com.comeon.websocket.user.infrastructure;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

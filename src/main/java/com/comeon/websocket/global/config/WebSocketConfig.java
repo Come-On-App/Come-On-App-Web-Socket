@@ -1,4 +1,4 @@
-package com.comeon.websocket.config;
+package com.comeon.websocket.global.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

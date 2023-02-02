@@ -1,26 +1,27 @@
-package com.comeon.websocket.config;
+package com.comeon.websocket.user.infrastructure;
 
+import com.comeon.websocket.user.application.UserInfoProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.stereotype.Component;
 
-import java.security.Principal;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UserPrincipalProviderImpl implements UserPrincipalProvider {
+public class UserInfoProviderImpl implements UserInfoProvider {
+
+    private static final String PREFIX_BEARER = "Bearer ";
 
     private final CircuitBreakerFactory circuitBreakerFactory;
     private final ComeOnApiUserFeignClient comeOnApiUserFeignClient;
 
     @Override
-    public Principal createUserPrincipalByToken(String token) {
-        CircuitBreaker cb = circuitBreakerFactory.create("getUserDetails");
+    public Long getUserIdBy(String token) {
+        CircuitBreaker cb = circuitBreakerFactory.create("getUserIdCircuitBreaker");
         UserDetailsResponse userDetailsResponse = cb.run(
-                () -> comeOnApiUserFeignClient.getUserDetails("Bearer " + token),
+                () -> comeOnApiUserFeignClient.getUserDetails(PREFIX_BEARER + token),
                 throwable -> { // TODO 예외 처리
                     log.error(throwable.getMessage());
                     return null;
@@ -30,6 +31,7 @@ public class UserPrincipalProviderImpl implements UserPrincipalProvider {
         if (userDetailsResponse == null) {
             return null;
         }
-        return new MeetingMemberPrincipal(userDetailsResponse.getUserId());
+
+        return userDetailsResponse.getUserId();
     }
 }

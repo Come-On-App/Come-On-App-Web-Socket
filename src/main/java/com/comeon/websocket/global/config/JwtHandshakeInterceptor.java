@@ -1,5 +1,7 @@
-package com.comeon.websocket.config;
+package com.comeon.websocket.global.config;
 
+import com.comeon.websocket.global.utils.StompSessionAttrUtils;
+import com.comeon.websocket.user.application.UserInfoProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
@@ -10,7 +12,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
-import java.security.Principal;
 import java.util.Map;
 
 @Slf4j
@@ -18,18 +19,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
-    private final UserPrincipalProvider userPrincipalProvider;
+    private final UserInfoProvider userInfoProvider;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         if (request instanceof ServletServerHttpRequest) {
             String token = ((ServletServerHttpRequest) request).getServletRequest().getParameter("token");
-            log.info("token: {}", token);
             if (StringUtils.hasText(token)) {
-                Principal principal = userPrincipalProvider.createUserPrincipalByToken(token);
-                if (principal != null) {
-                    log.info("userId: {}", principal.getName());
-                    attributes.put("uid", principal.getName());
+                Long userId = userInfoProvider.getUserIdBy(token);
+                if (userId != null) {
+                    StompSessionAttrUtils.setUserId(attributes, userId);
+                    StompSessionAttrUtils.setToken(attributes, token);
                     return true;
                 }
             }
