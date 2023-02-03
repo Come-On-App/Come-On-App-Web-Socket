@@ -63,8 +63,10 @@
     }
 
     const onSubscribeBtnClick = () => {
-        stompClient.subscribe("/sub", (msg) => {
+        stompClient.subscribe("/sub/meetings/2", (msg) => {
+            console.log(JSON.parse(msg.body))
             addContents(msg)
+
         })
         addContents("subscribe...")
     }
