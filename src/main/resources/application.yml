@@ -1,1 +1,9 @@
-
+spring:
+  config:
+    additional-location: config/
+  profiles:
+    group:
+      local: "local,websocket,kafka"
+      dev: "dev,websocket,kafka"
+      prod: "prod,websocket,kafka"
+    active: local
