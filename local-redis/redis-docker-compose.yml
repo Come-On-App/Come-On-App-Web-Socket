@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  redis:
+    container_name: local-comeon-app-websocket-redis
+    restart: always
+    image: redis:7.0.4
+    command: redis-server --port 6378
+    ports:
+      - "6378:6378"
+    environment:
+      TZ: Asia/Seoul
+    networks:
+      default:
+
+networks:
+  default:
+    name: local-comeon-app-backend
+    external: true
