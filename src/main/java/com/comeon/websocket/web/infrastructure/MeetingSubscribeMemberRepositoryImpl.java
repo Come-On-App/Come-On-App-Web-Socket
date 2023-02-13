@@ -4,11 +4,13 @@ import com.comeon.websocket.config.kafka.producer.KafkaProducer;
 import com.comeon.websocket.config.kafka.KafkaTopicProperties;
 import com.comeon.websocket.web.config.MeetingSubscribeMemberRepository;
 import com.comeon.websocket.web.config.MeetingSubscribeMembers;
+import com.comeon.websocket.web.message.dto.MeetingSubUnsubKafkaMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Transactional
@@ -19,40 +21,59 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
     private final KafkaProducer producer;
     private final MeetingSubscribeMembersRedisRepository meetingSubscribeMembersRedisRepository;
 
-    public MeetingSubscribeMembers saveMemberAtMeeting(Long meetingId, Long userId) {
+    public MeetingSubscribeMembers saveMemberAtMeeting(Long meetingId, String sessionId, Long userId) {
         MeetingSubscribeMembers meetingSubscribeMembers = meetingSubscribeMembersRedisRepository.findById(meetingId)
                 .orElse(new MeetingSubscribeMembers(meetingId));
 
-        meetingSubscribeMembers.addMember(userId);
+        boolean isNewMember = meetingSubscribeMembers.addMember(sessionId, userId);
         meetingSubscribeMembersRedisRepository.save(meetingSubscribeMembers);
 
-        producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+        if (isNewMember) {
+            MeetingSubUnsubKafkaMessage kafkaMessage = MeetingSubUnsubKafkaMessage.createSubMessage(
+                    meetingId,
+                    userId,
+                    meetingSubscribeMembers.getSessionUsers().stream()
+                            .map(MeetingSubscribeMembers.UserSessions::getUserId)
+                            .collect(Collectors.toSet())
+            );
+            producer.produce(topicProperties.getConnectingMembers(), kafkaMessage);
+        }
 
         return meetingSubscribeMembers;
     }
 
-    public MeetingSubscribeMembers removeMemberAtMeeting(Long meetingId, Long userId) {
-        return removeMember(meetingId, userId);
+    public MeetingSubscribeMembers removeMemberAtMeeting(Long meetingId, Long userId, String sessionId) {
+        return removeMember(meetingId, userId, sessionId);
     }
 
-    private MeetingSubscribeMembers removeMember(Long meetingId, Long userId) {
+    private MeetingSubscribeMembers removeMember(Long meetingId, Long userId, String sessionId) {
         MeetingSubscribeMembers meetingSubscribeMembers = meetingSubscribeMembersRedisRepository.findById(meetingId)
                 .orElseThrow();
 
-        meetingSubscribeMembers.removeMember(userId);
-        if (meetingSubscribeMembers.getUserIds().isEmpty()) {
+        boolean memberRemoved = meetingSubscribeMembers.removeMember(userId, sessionId);
+        if (meetingSubscribeMembers.getSessionUsers().isEmpty()) {
             meetingSubscribeMembersRedisRepository.delete(meetingSubscribeMembers);
         } else {
             meetingSubscribeMembersRedisRepository.save(meetingSubscribeMembers);
         }
 
-        producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+        if (memberRemoved) {
+            MeetingSubUnsubKafkaMessage kafkaMessage = MeetingSubUnsubKafkaMessage.createUnsubMessage(
+                    meetingId,
+                    userId,
+                    meetingSubscribeMembers.getSessionUsers().stream()
+                            .map(MeetingSubscribeMembers.UserSessions::getUserId)
+                            .collect(Collectors.toSet())
+            );
+            producer.produce(topicProperties.getConnectingMembers(), kafkaMessage);
+        }
+
         return meetingSubscribeMembers;
     }
 
-    public void removeMemberAtAllMeetings(List<Long> meetingIds, Long userId) {
+    public void removeMemberAtAllMeetings(List<Long> meetingIds, Long userId, String sessionId) {
         for (Long meetingId : meetingIds) {
-            removeMember(meetingId, userId);
+            removeMember(meetingId, userId, sessionId);
         }
     }
 }

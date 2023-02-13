@@ -15,7 +15,15 @@ public class StompMessage<T> {
         return new StompMessage<>(MessageType.RESOURCE_UPDATED_EVENT, data);
     }
 
-    public static <T> StompMessage<T> dataResponse(T data) {
-        return new StompMessage<>(MessageType.DATA_RESPONSE_MESSAGE, data);
+    public static <T> StompMessage<T> meetingSubscribeUsers(T data) {
+        return new StompMessage<>(MessageType.MEETING_SUBSCRIBE_USER_LIST, data);
+    }
+
+    public static <T> StompMessage<T> meetingSubscribeEvent(T data) {
+        return new StompMessage<>(MessageType.SUBSCRIBE_MEETING_EVENT, data);
+    }
+
+    public static <T> StompMessage<T> meetingUnsubscribeEvent(T data) {
+        return new StompMessage<>(MessageType.UNSUBSCRIBE_MEETING_EVENT, data);
     }
 }

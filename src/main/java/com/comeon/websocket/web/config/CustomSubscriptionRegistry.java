@@ -1,7 +1,6 @@
 package com.comeon.websocket.web.config;
 
 import com.comeon.websocket.utils.StompSessionAttrUtils;
-import com.comeon.websocket.web.infrastructure.MeetingSubscribeMemberRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.expression.*;
 import org.springframework.expression.spel.SpelEvaluationException;
@@ -48,13 +47,13 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
 
     // DI
     private final MeetingMemberInfoProvider meetingMemberInfoProvider;
-    private final MeetingSubscribeMemberRepositoryImpl meetingSubscribeMemberService;
+    private final MeetingSubscribeMemberRepository meetingSubscribeMemberRepository;
 
     public CustomSubscriptionRegistry(MeetingMemberInfoProvider meetingMemberInfoProvider,
-                                      MeetingSubscribeMemberRepositoryImpl meetingSubscribeMemberService
+                                      MeetingSubscribeMemberRepository meetingSubscribeMemberRepository
     ) {
         this.meetingMemberInfoProvider = meetingMemberInfoProvider;
-        this.meetingSubscribeMemberService = meetingSubscribeMemberService;
+        this.meetingSubscribeMemberRepository = meetingSubscribeMemberRepository;
     }
 
     public void setPathMatcher(PathMatcher pathMatcher) {
@@ -102,7 +101,7 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
         Subscription subscription = new Subscription(subscriptionId, destination, isPattern, expression);
 
         // 레디스 저장 및 카프카 적재
-        meetingSubscribeMemberService.saveMemberAtMeeting(memberInfo.getMeetingId(), memberInfo.getUserId());
+        meetingSubscribeMemberRepository.saveMemberAtMeeting(memberInfo.getMeetingId(), sessionId, memberInfo.getUserId());
 
         // 세션 저장소에 subscription 정보 저장
         this.sessionRegistry.addSubscription(sessionId, subscription, memberInfo.getUserId());
@@ -169,7 +168,7 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
                 Long userId = StompSessionAttrUtils.getUserId(sessionAttributes);
                 Long meetingId = parseMeetingIdFromDestination(subscription.destination);
 
-                meetingSubscribeMemberService.removeMemberAtMeeting(meetingId, userId);
+                meetingSubscribeMemberRepository.removeMemberAtMeeting(meetingId, userId, sessionId);
 
                 this.destinationCache.updateAfterRemovedSubscription(sessionId, subscription);
             }
@@ -196,7 +195,7 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
                         } catch (Exception e) {}
                     }
             );
-            meetingSubscribeMemberService.removeMemberAtAllMeetings(meetingIds, info.userId);
+            meetingSubscribeMemberRepository.removeMemberAtAllMeetings(meetingIds, info.userId, sessionId);
 
             this.destinationCache.updateAfterRemovedSession(sessionId, info);
         }
