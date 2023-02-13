@@ -4,11 +4,13 @@ import com.comeon.websocket.config.kafka.producer.KafkaProducer;
 import com.comeon.websocket.config.kafka.KafkaTopicProperties;
 import com.comeon.websocket.web.config.MeetingSubscribeMemberRepository;
 import com.comeon.websocket.web.config.MeetingSubscribeMembers;
+import com.comeon.websocket.web.message.dto.MeetingSubUnsubKafkaMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Transactional
@@ -27,7 +29,14 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
         meetingSubscribeMembersRedisRepository.save(meetingSubscribeMembers);
 
         if (isNewMember) {
-            producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+            MeetingSubUnsubKafkaMessage kafkaMessage = MeetingSubUnsubKafkaMessage.createSubMessage(
+                    meetingId,
+                    userId,
+                    meetingSubscribeMembers.getSessionUsers().stream()
+                            .map(MeetingSubscribeMembers.UserSessions::getUserId)
+                            .collect(Collectors.toSet())
+            );
+            producer.produce(topicProperties.getConnectingMembers(), kafkaMessage);
         }
 
         return meetingSubscribeMembers;
@@ -49,7 +58,14 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
         }
 
         if (memberRemoved) {
-            producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+            MeetingSubUnsubKafkaMessage kafkaMessage = MeetingSubUnsubKafkaMessage.createUnsubMessage(
+                    meetingId,
+                    userId,
+                    meetingSubscribeMembers.getSessionUsers().stream()
+                            .map(MeetingSubscribeMembers.UserSessions::getUserId)
+                            .collect(Collectors.toSet())
+            );
+            producer.produce(topicProperties.getConnectingMembers(), kafkaMessage);
         }
 
         return meetingSubscribeMembers;
