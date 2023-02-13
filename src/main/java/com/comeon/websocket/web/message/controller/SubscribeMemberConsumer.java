@@ -11,6 +11,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -21,8 +23,13 @@ public class SubscribeMemberConsumer {
     @KafkaListener(id = "subscribe_members", topics = {"${kafka.topic.connecting-members}"})
     public void consume(@Payload MeetingSubscribeMembers payload) {
         Long meetingId = payload.getMeetingId();
-        StompMessage<MeetingSubscriberResponseData> message = StompMessage.dataResponse(
-                new MeetingSubscriberResponseData(meetingId, payload.getUserIds())
+        StompMessage<MeetingSubscriberResponseData> message = StompMessage.meetingSubscribeUsers(
+                new MeetingSubscriberResponseData(
+                        meetingId,
+                        payload.getSessionUsers().stream()
+                                .map(MeetingSubscribeMembers.UserSessions::getUserId)
+                                .collect(Collectors.toSet())
+                )
         );
 
         simpMessagingTemplate.setHeaderInitializer(headerAccessor -> {

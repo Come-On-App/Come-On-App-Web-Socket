@@ -19,40 +19,45 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
     private final KafkaProducer producer;
     private final MeetingSubscribeMembersRedisRepository meetingSubscribeMembersRedisRepository;
 
-    public MeetingSubscribeMembers saveMemberAtMeeting(Long meetingId, Long userId) {
+    public MeetingSubscribeMembers saveMemberAtMeeting(Long meetingId, String sessionId, Long userId) {
         MeetingSubscribeMembers meetingSubscribeMembers = meetingSubscribeMembersRedisRepository.findById(meetingId)
                 .orElse(new MeetingSubscribeMembers(meetingId));
 
-        meetingSubscribeMembers.addMember(userId);
+        boolean isNewMember = meetingSubscribeMembers.addMember(sessionId, userId);
         meetingSubscribeMembersRedisRepository.save(meetingSubscribeMembers);
 
-        producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+        if (isNewMember) {
+            producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+        }
 
         return meetingSubscribeMembers;
     }
 
-    public MeetingSubscribeMembers removeMemberAtMeeting(Long meetingId, Long userId) {
-        return removeMember(meetingId, userId);
+    public MeetingSubscribeMembers removeMemberAtMeeting(Long meetingId, Long userId, String sessionId) {
+        return removeMember(meetingId, userId, sessionId);
     }
 
-    private MeetingSubscribeMembers removeMember(Long meetingId, Long userId) {
+    private MeetingSubscribeMembers removeMember(Long meetingId, Long userId, String sessionId) {
         MeetingSubscribeMembers meetingSubscribeMembers = meetingSubscribeMembersRedisRepository.findById(meetingId)
                 .orElseThrow();
 
-        meetingSubscribeMembers.removeMember(userId);
-        if (meetingSubscribeMembers.getUserIds().isEmpty()) {
+        boolean memberRemoved = meetingSubscribeMembers.removeMember(userId, sessionId);
+        if (meetingSubscribeMembers.getSessionUsers().isEmpty()) {
             meetingSubscribeMembersRedisRepository.delete(meetingSubscribeMembers);
         } else {
             meetingSubscribeMembersRedisRepository.save(meetingSubscribeMembers);
         }
 
-        producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+        if (memberRemoved) {
+            producer.produce(topicProperties.getConnectingMembers(), meetingSubscribeMembers);
+        }
+
         return meetingSubscribeMembers;
     }
 
-    public void removeMemberAtAllMeetings(List<Long> meetingIds, Long userId) {
+    public void removeMemberAtAllMeetings(List<Long> meetingIds, Long userId, String sessionId) {
         for (Long meetingId : meetingIds) {
-            removeMember(meetingId, userId);
+            removeMember(meetingId, userId, sessionId);
         }
     }
 }
