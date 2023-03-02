@@ -45,7 +45,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // 클라이언트가 메시지 발행시 /topic/* 경로로 전송
         registry.setApplicationDestinationPrefixes("/topic");
         // 클라이언트가 메시지를 /sub/* 경로로 구독
-        registry.enableSimpleBroker("/sub");
+        registry.enableSimpleBroker("/sub", "/queue");
     }
 
     @Profile("local")

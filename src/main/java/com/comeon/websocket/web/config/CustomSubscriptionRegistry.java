@@ -29,6 +29,7 @@ import java.util.function.BiConsumer;
 public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
 
     private static final String MEETING_SUBSCRIBE_PATH_PATTERN = "/sub/meetings/{meetingId}";
+    private static final String MEETING_QUEUE_PATH_PATTERN = "/queue/meetings/{meetingIdWithSessionId}";
     public static final int DEFAULT_CACHE_LIMIT = 1024;
 
     private static final EvaluationContext messageEvalContext =
@@ -86,6 +87,7 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
     @Override
     protected void addSubscriptionInternal(String sessionId, String subscriptionId, String destination, Message<?> message) {
         log.debug("{} - START", getMethodName());
+        log.debug("destination: {}", destination);
 
         // destination 에서 meetingId parsing
         Long meetingId = parseMeetingIdFromDestination(destination);
@@ -101,7 +103,9 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
         Subscription subscription = new Subscription(subscriptionId, destination, isPattern, expression);
 
         // 레디스 저장 및 카프카 적재
-        meetingSubscribeMemberRepository.saveMemberAtMeeting(memberInfo.getMeetingId(), sessionId, memberInfo.getUserId());
+        if (pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, destination)) {
+            meetingSubscribeMemberRepository.saveMemberAtMeeting(memberInfo.getMeetingId(), sessionId, memberInfo.getUserId());
+        }
 
         // 세션 저장소에 subscription 정보 저장
         this.sessionRegistry.addSubscription(sessionId, subscription, memberInfo.getUserId());
@@ -114,19 +118,40 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
     }
 
     private Long parseMeetingIdFromDestination(String destination) {
-        Map<String, String> meetingIdMap = pathMatcher.extractUriTemplateVariables(MEETING_SUBSCRIBE_PATH_PATTERN, destination);
-        String meetingIdStr = meetingIdMap.getOrDefault("meetingId", null);
-        if (!StringUtils.hasText(meetingIdStr)) {
-            throw new RuntimeException("no meeting id");
+        if (pathMatcher.match(MEETING_QUEUE_PATH_PATTERN, destination)) {
+            Map<String, String> meetingIdMap = pathMatcher.extractUriTemplateVariables(MEETING_QUEUE_PATH_PATTERN, destination);
+            String meetingIdWithSessionId = meetingIdMap.getOrDefault("meetingIdWithSessionId", null);
+            String meetingIdStr = meetingIdWithSessionId.split("-")[0];
+            if (!StringUtils.hasText(meetingIdStr)) {
+                throw new RuntimeException("no meeting id");
+            }
+
+            Long meetingId = null;
+            try {
+                meetingId = Long.parseLong(meetingIdStr);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("meeting id must be number", e);
+            }
+            return meetingId;
         }
 
-        Long meetingId = null;
-        try {
-            meetingId = Long.parseLong(meetingIdStr);
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("meeting id must be number", e);
+        if (pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, destination)) {
+            Map<String, String> meetingIdMap = pathMatcher.extractUriTemplateVariables(MEETING_SUBSCRIBE_PATH_PATTERN, destination);
+            String meetingIdStr = meetingIdMap.getOrDefault("meetingId", null);
+            if (!StringUtils.hasText(meetingIdStr)) {
+                throw new RuntimeException("no meeting id");
+            }
+
+            Long meetingId = null;
+            try {
+                meetingId = Long.parseLong(meetingIdStr);
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("meeting id must be number", e);
+            }
+            return meetingId;
         }
-        return meetingId;
+
+        return null;
     }
 
     @Nullable
@@ -186,12 +211,15 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
 
         SessionInfo info = this.sessionRegistry.removeSubscriptions(sessionId);
         if (info != null) {
+            log.debug("userId: {}, sessionId: {}", info.getUserId(), sessionId);
             List<Long> meetingIds = new ArrayList<>();
             info.getSubscriptions().forEach(
                     subscription -> {
                         try {
-                            Long meetingId = parseMeetingIdFromDestination(subscription.destination);
-                            meetingIds.add(meetingId);
+                            if (pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, subscription.destination)) {
+                                Long meetingId = parseMeetingIdFromDestination(subscription.destination);
+                                meetingIds.add(meetingId);
+                            }
                         } catch (Exception e) {}
                     }
             );
