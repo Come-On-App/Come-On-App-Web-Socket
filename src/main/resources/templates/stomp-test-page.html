@@ -121,6 +121,8 @@
 
     const subscribeBase = "/sub/meetings"
     let subscribeFull = baseUrl
+    const queueSubscribeBase = "/user/queue/meetings"
+    let queueSubscribeFull = baseUrl
 
     const setSubscribeUrl = (value) => {
         $("#span-sub-url").html(value)
@@ -130,16 +132,18 @@
         const meetingId = $("#input-meeting-id").val()
         if (meetingId !== "") {
             subscribeFull = `${subscribeBase}/${meetingId}`
+            queueSubscribeFull = `${queueSubscribeBase}/${meetingId}`
             setSubscribeUrl(subscribeFull)
         } else {
             subscribeFull = subscribeBase
+            queueSubscribeFull = queueSubscribeBase
             setSubscribeUrl(subscribeFull);
         }
     }
 
     const onSubscribeBtnClick = () => {
         if (subscribe == null) {
-            stompClient.subscribe("/user/queue/meetings/2", (msg) => {
+            stompClient.subscribe(queueSubscribeFull, (msg) => {
                 console.log(msg);
                 addContents(msg);
             })
