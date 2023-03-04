@@ -1,6 +1,6 @@
 package com.comeon.websocket.web.message.controller;
 
-import com.comeon.websocket.web.message.dto.MeetingMemberResourceMessage;
+import com.comeon.websocket.web.message.dto.MeetingFixedDateResourceMessage;
 import com.comeon.websocket.web.message.dto.StompMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,8 +23,8 @@ public class MeetingFixedDateResourceConsumer extends AbstractMessageConsumer {
     @KafkaListener(id = "fixed-date", topics = {"${kafka.topic.meeting-fixed-date}"})
     public void consume(@Payload FixedDateUpdateMessage message) {
         Long meetingId = message.getMeetingId();
-        StompMessage<MeetingMemberResourceMessage> stompMessage =
-                StompMessage.resourceUpdated(MeetingMemberResourceMessage.create(meetingId));
+        StompMessage<MeetingFixedDateResourceMessage> stompMessage =
+                StompMessage.resourceUpdated(MeetingFixedDateResourceMessage.create(meetingId));
 
         messagingTemplate.setHeaderInitializer(
                 headerAccessor -> headerAccessor.setContentType(MediaType.APPLICATION_JSON)
