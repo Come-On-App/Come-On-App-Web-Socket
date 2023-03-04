@@ -24,7 +24,9 @@
             </div>
             <div class="col-4">
                 <button id="connectBtn" class="btn btn-primary" onclick="onConnectBtnClick()">STOMP 연결</button>
-                <button id="disconnectBtn" class="btn btn-secondary disabled" onclick="onConnectionCloseBtnClick()">연결 종료</button>
+                <button id="disconnectBtn" class="btn btn-secondary disabled" onclick="onConnectionCloseBtnClick()">연결
+                    종료
+                </button>
             </div>
         </div>
     </div>
@@ -38,7 +40,8 @@
             </div>
             <div class="col-6">
                 <button id="subscribeBtn" class="btn btn-primary" onclick="onSubscribeBtnClick()">구독</button>
-                <button id="unsubscribeBtn" class="btn btn-secondary disabled" onclick="onUnsubscribeBtnClick()">해제</button>
+                <button id="unsubscribeBtn" class="btn btn-secondary disabled" onclick="onUnsubscribeBtnClick()">해제
+                </button>
             </div>
         </div>
     </div>
@@ -136,6 +139,10 @@
 
     const onSubscribeBtnClick = () => {
         if (subscribe == null) {
+            stompClient.subscribe("/user/queue/meetings/2", (msg) => {
+                console.log(msg);
+                addContents(msg);
+            })
             subscribe = stompClient.subscribe(subscribeFull, (msg) => {
                 console.log(JSON.parse(msg.body))
                 addContents(msg)

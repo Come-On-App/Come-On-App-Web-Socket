@@ -6,12 +6,14 @@ import com.comeon.websocket.web.config.MeetingSubscribeMemberRepository;
 import com.comeon.websocket.web.config.MeetingSubscribeMembers;
 import com.comeon.websocket.web.message.dto.MeetingSubUnsubKafkaMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @Transactional
 @RequiredArgsConstructor
@@ -47,6 +49,7 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
     }
 
     private MeetingSubscribeMembers removeMember(Long meetingId, Long userId, String sessionId) {
+        log.debug("removeMember at meetingId: {}, userId: {}, sessionId: {}", meetingId, userId, sessionId);
         MeetingSubscribeMembers meetingSubscribeMembers = meetingSubscribeMembersRedisRepository.findById(meetingId)
                 .orElseThrow();
 
