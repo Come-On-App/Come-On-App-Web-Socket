@@ -12,7 +12,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MeetingUnsubscribeEventListener {
+public class SessionDisconnectEventListener {
 
     private final UserLockRemoveSupporter userLockRemoveSupporter;
 
