@@ -242,15 +242,19 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
     @Override
     protected MultiValueMap<String, String> findSubscriptionsInternal(String destination, Message<?> message) {
         log.debug("{} - START", getMethodName());
+        log.debug("destination: {}", destination);
 
         MultiValueMap<String, String> allMatches = this.destinationCache.getSubscriptions(destination);
         if (!this.selectorHeaderInUse) {
+            log.debug("this.selectorHeaderInUse = false");
             logSessionRegistry();
             logDestinationCache();
             log.debug("{} - END", getMethodName());
             return allMatches;
         }
+
         MultiValueMap<String, String> result = new LinkedMultiValueMap<>(allMatches.size());
+        log.debug("allMatches.size() : {}", allMatches.size());
         allMatches.forEach((sessionId, subscriptionIds) -> {
             SessionInfo info = this.sessionRegistry.getSession(sessionId);
             if (info != null) {
