@@ -59,6 +59,7 @@
     let socket
     let stompClient
     let subscribe
+    let queueSubscribe
 
     let contents = ""
 
@@ -143,7 +144,7 @@
 
     const onSubscribeBtnClick = () => {
         if (subscribe == null) {
-            stompClient.subscribe(queueSubscribeFull, (msg) => {
+            queueSubscribe = stompClient.subscribe(queueSubscribeFull, (msg) => {
                 console.log(msg);
                 addContents(msg);
             })
@@ -160,6 +161,7 @@
     const onUnsubscribeBtnClick = () => {
         if (subscribe != null) {
             stompClient.unsubscribe(subscribe.id)
+            stompClient.unsubscribe(queueSubscribe.id)
             addContents("unSubscribe...")
             subscribe = null
             $("#subscribeBtn").removeClass("disabled")
