@@ -45,6 +45,7 @@ public class SubscribeMemberConsumer {
                             .collect(Collectors.toList())
             );
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(payload.getTargetUserId()), "/queue/meetings/" + meetingId, message);
+            log.debug("sendToUser - user:{}", payload.getTargetUserId());
         } else {
             simpMessagingTemplate.convertAndSend(destination, StompMessage.meetingUnsubscribeEvent(subUnsubEventMessage));
         }
