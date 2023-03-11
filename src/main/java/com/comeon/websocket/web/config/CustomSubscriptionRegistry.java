@@ -182,9 +182,14 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
     @Override
     protected void removeSubscriptionInternal(String sessionId, String subscriptionId, Message<?> message) {
         log.debug("{} - START", getMethodName());
-
+        log.debug("subscriptionId: {}", subscriptionId);
         SessionInfo info = this.sessionRegistry.getSession(sessionId);
-        if (info != null) {
+        if (info == null || info.getSubscription(subscriptionId) == null) {
+            return;
+        }
+
+        Subscription sub = info.getSubscription(subscriptionId);
+        if (pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, sub.destination)) {
             Subscription subscription = info.removeSubscription(subscriptionId);
 
             if (subscription != null) {
@@ -194,13 +199,14 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
                 Long meetingId = parseMeetingIdFromDestination(subscription.destination);
 
                 meetingSubscribeMemberRepository.removeMemberAtMeeting(meetingId, userId, sessionId);
+                log.debug("sessionId: {}, subscriptionId: {}, destination: {} removed", sessionId, subscriptionId, sub.destination);
 
                 this.destinationCache.updateAfterRemovedSubscription(sessionId, subscription);
+
+                logSessionRegistry();
+                logDestinationCache();
             }
         }
-
-        logSessionRegistry();
-        logDestinationCache();
         log.debug("{} - END", getMethodName());
     }
 
