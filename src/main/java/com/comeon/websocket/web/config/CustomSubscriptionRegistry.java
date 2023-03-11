@@ -188,25 +188,24 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
             return;
         }
 
-        Subscription sub = info.getSubscription(subscriptionId);
-        if (pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, sub.destination)) {
-            Subscription subscription = info.removeSubscription(subscriptionId);
-
-            if (subscription != null) {
+        Subscription subscription = info.removeSubscription(subscriptionId);
+        if (subscription != null) {
+            if (pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, subscription.destination)) {
                 StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(message);
                 Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
                 Long userId = StompSessionAttrUtils.getUserId(sessionAttributes);
                 Long meetingId = parseMeetingIdFromDestination(subscription.destination);
 
                 meetingSubscribeMemberRepository.removeMemberAtMeeting(meetingId, userId, sessionId);
-                log.debug("sessionId: {}, subscriptionId: {}, destination: {} removed", sessionId, subscriptionId, sub.destination);
-
-                this.destinationCache.updateAfterRemovedSubscription(sessionId, subscription);
-
-                logSessionRegistry();
-                logDestinationCache();
+                log.debug("sessionId: {}, subscriptionId: {}, destination: {} removed", sessionId, subscriptionId, subscription.destination);
             }
+
+            this.destinationCache.updateAfterRemovedSubscription(sessionId, subscription);
+
+            logSessionRegistry();
+            logDestinationCache();
         }
+
         log.debug("{} - END", getMethodName());
     }
 
@@ -226,7 +225,8 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
                                 Long meetingId = parseMeetingIdFromDestination(subscription.destination);
                                 meetingIds.add(meetingId);
                             }
-                        } catch (Exception e) {}
+                        } catch (Exception e) {
+                        }
                     }
             );
             meetingSubscribeMemberRepository.removeMemberAtAllMeetings(meetingIds, info.userId, sessionId);
@@ -620,6 +620,7 @@ public class CustomSubscriptionRegistry extends AbstractSubscriptionRegistry {
         @Override
         public void write(EvaluationContext context, @Nullable Object target, String name, @Nullable Object value) {
         }
+
     }
 
     private static String getMethodName() {
