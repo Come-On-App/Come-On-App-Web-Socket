@@ -18,14 +18,49 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    set('testcontainersVersion', "1.17.6")
+    set('springCloudVersion', "2021.0.5")
+    set('feignHttpClientVersion', "12.1")
+    set('jjwtVersion', "0.11.5")
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.kafka:spring-kafka'
+
+    // feign-client
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation "io.github.openfeign:feign-httpclient:${feignHttpClientVersion}"
+    // resilience4j
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+
+    // reids
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // jwt
+    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+    // jquery & bootstrap
+    implementation 'org.webjars:jquery:3.6.2'
+    implementation 'org.webjars:bootstrap:5.2.3'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 tasks.named('test') {
