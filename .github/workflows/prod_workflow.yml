@@ -10,7 +10,7 @@ name: ComeOn WebSocket App Dev CI/CD
 # Event Trigger
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -52,11 +52,11 @@ jobs:
       - name: Docker image pull and run
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.DEV_HOST }}
-          username: ${{ secrets.DEV_USERNAME }}
-          key: ${{ secrets.DEV_PRIVATE_KEY }}
-          port: ${{ secrets.DEV_PORT }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_PRIVATE_KEY }}
+          port: ${{ secrets.PROD_PORT }}
           script: |
-            docker compose -f ~/yoo_dev/comeon-app-backend/websocket-server-docker-compose.yml down
+            docker compose -f ~/comeon-app/compose/websocket-server-docker-compose.yml down
             docker image rm ${{ secrets.YOO_DOCKERHUB_USERNAME }}/comeon-websocket
-            docker compose -f ~/yoo_dev/comeon-app-backend/websocket-server-docker-compose.yml up -d --no-recreate
+            docker compose -f ~/comeon-app/compose/websocket-server-docker-compose.yml up -d --no-recreate
