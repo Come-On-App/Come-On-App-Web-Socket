@@ -57,6 +57,6 @@ jobs:
           key: ${{ secrets.DEV_PRIVATE_KEY }}
           port: ${{ secrets.DEV_PORT }}
           script: |
-            docker compose -f ~/yoo_dev/comeon-app-backend/websocket-docker-compose.yml down
+            docker compose -f ~/yoo_dev/comeon-app-backend/websocket-server-docker-compose.yml down
             docker image rm ${{ secrets.YOO_DOCKERHUB_USERNAME }}/comeon-websocket
-            docker compose -f ~/yoo_dev/comeon-app-backend/websocket-docker-compose.yml up -d --no-recreate
+            docker compose -f ~/yoo_dev/comeon-app-backend/websocket-server-docker-compose.yml up -d --no-recreate
