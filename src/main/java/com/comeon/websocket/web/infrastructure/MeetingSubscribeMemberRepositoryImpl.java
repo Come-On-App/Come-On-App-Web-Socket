@@ -39,6 +39,7 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
                             .collect(Collectors.toSet())
             );
             producer.produce(topicProperties.getConnectingMembers(), kafkaMessage);
+            log.info("new member(at meeting-id: {}, user-id: {}) subscribed..", meetingId, userId);
         }
 
         return meetingSubscribeMembers;
@@ -69,6 +70,7 @@ public class MeetingSubscribeMemberRepositoryImpl implements MeetingSubscribeMem
                             .collect(Collectors.toSet())
             );
             producer.produce(topicProperties.getConnectingMembers(), kafkaMessage);
+            log.info("member(at meeting-id: {}, user-id: {}) unsubscribed..", meetingId, userId);
         }
 
         return meetingSubscribeMembers;

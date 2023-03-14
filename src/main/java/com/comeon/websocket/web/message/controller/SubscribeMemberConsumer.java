@@ -32,6 +32,7 @@ public class SubscribeMemberConsumer {
         String destination = "/sub/meetings/" + meetingId;
         if (payload.getMessageType().isSubscribeMessage()) {
             simpMessagingTemplate.convertAndSend(destination, StompMessage.meetingSubscribeEvent(subUnsubEventMessage));
+            log.info("[subscribe] send to meeting -> destination: {}", destination);
 
             // 접속한 유저에게만 메시지 전송
             LockedMeetingPlaceListResponse lockedMeetingPlaceList = lockedMeetingPlaceProvider.getLockedMeetingPlaceList(meetingId);
@@ -44,11 +45,14 @@ public class SubscribeMemberConsumer {
                             ))
                             .collect(Collectors.toList())
             );
-            simpMessagingTemplate.convertAndSendToUser(String.valueOf(payload.getTargetUserId()), "/queue/meetings/" + meetingId, message);
-            log.debug("sendToUser - user:{}", payload.getTargetUserId());
+            String queueDestination = "/queue/meetings/" + meetingId;
+            simpMessagingTemplate.convertAndSendToUser(String.valueOf(payload.getTargetUserId()), queueDestination, message);
+            log.info("[locked-meeting-places] send to user -> user: {}, destination: {}", payload.getTargetUserId(), queueDestination);
         } else {
             simpMessagingTemplate.convertAndSend(destination, StompMessage.meetingUnsubscribeEvent(subUnsubEventMessage));
+            log.info("[unsubscribe] send to meeting -> destination: {}", destination);
         }
         simpMessagingTemplate.convertAndSend(destination, SubscribingUserIdsMessage);
+        log.info("[subscribing-users] send to meeting -> destination: {}", destination);
     }
 }

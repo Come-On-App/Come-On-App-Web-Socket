@@ -30,7 +30,9 @@ public class MeetingMemberResourceConsumer extends AbstractMessageConsumer {
                 headerAccessor -> headerAccessor.setContentType(MediaType.APPLICATION_JSON)
         );
 
-        messagingTemplate.convertAndSend("/sub/meetings/" + meetingId, stompMessage);
+        String destination = "/sub/meetings/" + meetingId;
+        messagingTemplate.convertAndSend(destination, stompMessage);
+        log.info("[meeting-members-update] send to meeting -> destination: {}", destination);
     }
 
     @Getter

@@ -30,7 +30,9 @@ public class MeetingFixedDateResourceConsumer extends AbstractMessageConsumer {
                 headerAccessor -> headerAccessor.setContentType(MediaType.APPLICATION_JSON)
         );
 
-        messagingTemplate.convertAndSend("/sub/meetings/" + meetingId, stompMessage);
+        String destination = "/sub/meetings/" + meetingId;
+        messagingTemplate.convertAndSend(destination, stompMessage);
+        log.info("[meeting-confirmed-date-update] send to meeting -> destination: {}", destination);
     }
 
     @Getter

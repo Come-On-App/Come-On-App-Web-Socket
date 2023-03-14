@@ -30,7 +30,9 @@ public class MeetingPlaceLockConsumer extends AbstractMessageConsumer {
                 headerAccessor -> headerAccessor.setContentType(MediaType.APPLICATION_JSON)
         );
 
-        messagingTemplate.convertAndSend("/sub/meetings/" + meetingId, stompMessage);
+        String destination = "/sub/meetings/" + meetingId;
+        messagingTemplate.convertAndSend(destination, stompMessage);
+        log.info("[meeting-place-lock] send to meeting -> destination: {}", destination);
     }
 
     @Getter
