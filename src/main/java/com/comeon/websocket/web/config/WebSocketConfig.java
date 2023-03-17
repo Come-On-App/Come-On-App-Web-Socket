@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.WebSocketMessageBrokerStats;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -18,9 +18,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final CustomSubscriptionRegistry customSubscriptionRegistry;
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
     private final JwtHandshakeHandler jwtHandshakeHandler;
+    private final SubscribeInterceptor subscribeInterceptor;
+    private final UnsubscribeInterceptor unsubscribeInterceptor;
+    private final DisconnectInterceptor disconnectInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -48,6 +50,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/sub", "/queue");
     }
 
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(subscribeInterceptor, unsubscribeInterceptor, disconnectInterceptor);
+    }
+
     @Profile("local")
     @Bean
     public WebSocketMessageBrokerStats localWebSocketMessageBrokerStats(WebSocketMessageBrokerStats webSocketMessageBrokerStats) {
@@ -55,9 +62,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return webSocketMessageBrokerStats;
     }
 
-    @Bean
-    public SimpleBrokerMessageHandler customSimpleBrokerMessageHandler(SimpleBrokerMessageHandler simpleBrokerMessageHandler) {
-        simpleBrokerMessageHandler.setSubscriptionRegistry(customSubscriptionRegistry);
-        return simpleBrokerMessageHandler;
-    }
+//    @Bean
+//    public SimpleBrokerMessageHandler customSimpleBrokerMessageHandler(SimpleBrokerMessageHandler simpleBrokerMessageHandler) {
+//        simpleBrokerMessageHandler.setSubscriptionRegistry(customSubscriptionRegistry);
+//        return simpleBrokerMessageHandler;
+//    }
 }

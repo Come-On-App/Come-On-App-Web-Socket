@@ -4,6 +4,7 @@ import com.comeon.websocket.web.config.MeetingMemberInfo;
 import com.comeon.websocket.web.config.MeetingMemberInfoProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.stereotype.Component;
@@ -13,16 +14,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MeetingMemberInfoProviderImpl implements MeetingMemberInfoProvider {
 
-    private static final String PREFIX_BEARER = "Bearer ";
+    @Value("${admin.key}")
+    private String adminKey;
 
     private final CircuitBreakerFactory circuitBreakerFactory;
     private final ComeOnApiUserFeignClient comeOnApiUserFeignClient;
 
     @Override
-    public MeetingMemberInfo getMeetingMemberInfoBy(String token, Long meetingId) {
+    public MeetingMemberInfo getMeetingMemberInfoBy(Long meetingId, Long userId) {
         CircuitBreaker cb = circuitBreakerFactory.create("getMemberInfo");
         MemberInfoResponse memberInfoResponse = cb.run(
-                () -> comeOnApiUserFeignClient.getMemberInfo(PREFIX_BEARER + token, meetingId),
+                () -> comeOnApiUserFeignClient.getMemberInfo(adminKey, meetingId, userId),
                 throwable -> { // TODO 예외 처리
                     log.error(throwable.getMessage());
                     return null;
