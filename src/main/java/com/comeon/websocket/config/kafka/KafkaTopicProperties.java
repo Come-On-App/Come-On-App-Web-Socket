@@ -25,4 +25,7 @@ public class KafkaTopicProperties {
 
     @Value("${kafka.topic.meeting-fixed-date}")
     private String meetingFixedDate;
+
+    @Value("${kafka.topic.meeting-time}")
+    private String meetingTime;
 }

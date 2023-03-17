@@ -4,6 +4,7 @@ import com.comeon.websocket.web.message.controller.LockedMeetingPlaceListRespons
 import com.comeon.websocket.web.message.controller.LockedMeetingPlaceProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LockedMeetingPlaceProviderImpl implements LockedMeetingPlaceProvider {
 
+    @Value("${admin.key}")
+    private String adminKey;
+
     private final CircuitBreakerFactory circuitBreakerFactory;
     private final ComeOnApiUserFeignClient comeOnApiUserFeignClient;
 
@@ -21,7 +25,7 @@ public class LockedMeetingPlaceProviderImpl implements LockedMeetingPlaceProvide
         CircuitBreaker cb = circuitBreakerFactory.create("getLockedMeetingPlaces");
 
         return cb.run(
-                () -> comeOnApiUserFeignClient.lockedMeetingPlaceList(meetingId),
+                () -> comeOnApiUserFeignClient.lockedMeetingPlaceList(adminKey, meetingId),
                 throwable -> {
                     log.error(throwable.getMessage());
                     throw new RuntimeException(throwable);

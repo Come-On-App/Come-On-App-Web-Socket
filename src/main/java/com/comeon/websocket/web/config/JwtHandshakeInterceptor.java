@@ -12,6 +12,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -23,6 +24,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+        log.debug("beforeHandshake()");
         Principal principal = request.getPrincipal();
         if (principal != null) {
             log.debug("request.principal: {}", principal.getName());
@@ -34,6 +36,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 if (userId != null) {
                     StompSessionAttrUtils.setUserId(attributes, userId);
                     StompSessionAttrUtils.setToken(attributes, token);
+                    attributes.put("subscriptions", new HashMap<String, String>());
                     return true;
                 }
             }
