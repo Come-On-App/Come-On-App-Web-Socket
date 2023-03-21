@@ -60,8 +60,6 @@ public class UnsubscribeInterceptor implements ChannelInterceptor {
                 }
 
                 subscriptions.remove(headerAccessor.getSubscriptionId());
-            } else {
-                return null;
             }
         }
 
