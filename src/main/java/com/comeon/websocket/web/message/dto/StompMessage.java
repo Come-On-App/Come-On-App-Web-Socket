@@ -26,4 +26,8 @@ public class StompMessage<T> {
     public static <T> StompMessage<T> meetingUnsubscribeEvent(T data) {
         return new StompMessage<>(MessageType.UNSUBSCRIBE_MEETING_EVENT, data);
     }
+
+    public static <T> StompMessage<T> dropped(T data) {
+        return new StompMessage<>(MessageType.DROPPED, data);
+    }
 }
