@@ -12,6 +12,7 @@ public enum MessageType {
     SUBSCRIBE_MEETING_EVENT("모임 구독 이벤트 알림"),
     UNSUBSCRIBE_MEETING_EVENT("모임 구독 해제 이벤트 알림"),
     DROPPED("모임 강퇴 알림"),
+    LOCKED_MEETING_PLACE_LIST("락이 등록된 모임 장소 리스트"),
     ;
 
     private final String description;
