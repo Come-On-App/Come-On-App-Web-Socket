@@ -3,7 +3,7 @@ spring:
     additional-location: config/
   profiles:
     group:
-      local: "local,websocket,kafka,websocket-logging"
-      dev: "dev,websocket,kafka,websocket-logging"
-      prod: "prod,websocket,kafka,websocket-logging"
+      local: "local,websocket,kafka,websocket-logging,admin"
+      dev: "dev,websocket,kafka,websocket-logging,admin"
+      prod: "prod,websocket,kafka,websocket-logging,admin"
     active: local

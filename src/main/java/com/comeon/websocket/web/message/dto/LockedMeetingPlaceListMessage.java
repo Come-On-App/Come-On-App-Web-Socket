@@ -6,19 +6,18 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class LockedMeetingPlaceListMessage extends AbstractMeetingResourceUpdatedMessage{
+public class LockedMeetingPlaceListMessage {
 
     private Long meetingId;
     private List<LockedPlaceSimple> lockedPlaces;
 
-    private LockedMeetingPlaceListMessage(MeetingResourceType meetingResourceType, Long meetingId, List<LockedPlaceSimple> lockedPlaces) {
-        super(meetingResourceType);
+    private LockedMeetingPlaceListMessage(Long meetingId, List<LockedPlaceSimple> lockedPlaces) {
         this.meetingId = meetingId;
         this.lockedPlaces = lockedPlaces;
     }
 
     public static LockedMeetingPlaceListMessage create(Long meetingId, List<LockedPlaceSimple> lockedPlaces) {
-        return new LockedMeetingPlaceListMessage(MeetingResourceType.LOCKED_MEETING_PLACE_LIST, meetingId, lockedPlaces);
+        return new LockedMeetingPlaceListMessage(meetingId, lockedPlaces);
     }
 
     @Getter
