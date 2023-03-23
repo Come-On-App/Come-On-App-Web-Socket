@@ -36,15 +36,18 @@ public class SubscribeMemberConsumer {
 
             // 접속한 유저에게만 메시지 전송
             LockedMeetingPlaceListResponse lockedMeetingPlaceList = lockedMeetingPlaceProvider.getLockedMeetingPlaceList(meetingId);
-            LockedMeetingPlaceListMessage message = LockedMeetingPlaceListMessage.create(
-                    meetingId,
-                    lockedMeetingPlaceList.getLockedPlaces().stream()
-                            .map(lockedPlaceSimple -> new LockedMeetingPlaceListMessage.LockedPlaceSimple(
-                                    lockedPlaceSimple.getMeetingPlaceId(),
-                                    lockedPlaceSimple.getLockingUserId()
-                            ))
-                            .collect(Collectors.toList())
+            StompMessage<LockedMeetingPlaceListMessage> message = StompMessage.lockedMeetingPlaces(
+                    LockedMeetingPlaceListMessage.create(
+                            meetingId,
+                            lockedMeetingPlaceList.getLockedPlaces().stream()
+                                    .map(lockedPlaceSimple -> new LockedMeetingPlaceListMessage.LockedPlaceSimple(
+                                            lockedPlaceSimple.getMeetingPlaceId(),
+                                            lockedPlaceSimple.getLockingUserId()
+                                    ))
+                                    .collect(Collectors.toList())
+                    )
             );
+
             String queueDestination = "/queue/meetings/" + meetingId;
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(payload.getTargetUserId()), queueDestination, message);
             log.info("[locked-meeting-places] send to user -> user: {}, destination: {}", payload.getTargetUserId(), queueDestination);

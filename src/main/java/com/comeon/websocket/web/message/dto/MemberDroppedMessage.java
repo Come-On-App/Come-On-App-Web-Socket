@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MemberDroppedMessage {
 
-    private Long meeting;
+    private Long meetingId;
     private Long userId;
 
     public static MemberDroppedMessage create(Long meeting, Long userId) {

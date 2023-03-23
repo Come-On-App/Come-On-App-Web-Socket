@@ -24,7 +24,6 @@ public abstract class AbstractMeetingResourceUpdatedMessage {
         MEETING_FIXED_DATE("모임 확정일 정보"),
         MEETING_PLACE_LOCK("모임 장소 락 등록"),
         MEETING_PLACE_UNLOCK("모임 장소 락 해제"),
-        LOCKED_MEETING_PLACE_LIST("락이 등록된 모임 장소 리스트"),
         ;
 
         private final String description;

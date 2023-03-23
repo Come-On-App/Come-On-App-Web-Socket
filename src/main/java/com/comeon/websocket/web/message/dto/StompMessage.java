@@ -30,4 +30,8 @@ public class StompMessage<T> {
     public static <T> StompMessage<T> dropped(T data) {
         return new StompMessage<>(MessageType.DROPPED, data);
     }
+
+    public static <T> StompMessage<T> lockedMeetingPlaces(T data) {
+        return new StompMessage<>(MessageType.LOCKED_MEETING_PLACE_LIST, data);
+    }
 }
