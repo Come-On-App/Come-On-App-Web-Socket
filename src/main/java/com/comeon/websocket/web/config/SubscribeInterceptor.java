@@ -37,7 +37,10 @@ public class SubscribeInterceptor implements ChannelInterceptor {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(message);
         if (StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())
                 && pathMatcher.match(MEETING_SUBSCRIBE_PATH_PATTERN, headerAccessor.getDestination())) {
-            log.debug("user: {}", headerAccessor.getUser().getName());
+            log.debug("user: {}", headerAccessor.getUser());
+            if (headerAccessor.getUser() != null) {
+                log.debug("user.name: {}", headerAccessor.getUser().getName());
+            }
             log.debug("subscribe destination: {}", headerAccessor.getDestination());
             Long meetingId = parseMeetingIdFromDestination(headerAccessor.getDestination());
 

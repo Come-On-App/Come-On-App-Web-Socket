@@ -16,6 +16,7 @@ public class JwtHandshakeHandler extends DefaultHandshakeHandler {
 
     @Override
     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
+        log.debug("determineUser");
         return () -> String.valueOf(StompSessionAttrUtils.getUserId(attributes));
     }
 }
